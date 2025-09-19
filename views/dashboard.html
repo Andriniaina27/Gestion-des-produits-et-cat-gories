@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/assets/sass/style.css">
     <link rel="stylesheet" href="/assets/fontawesome-free-5.15.4-web/css/all.min.css">
-    <title>Liste des Catégorie</title>
+    <title>Tableau de bord</title>
 </head>
 <body>
     <div class="wrapper">
@@ -30,28 +30,47 @@
                 </div>
             </nav>
         </div>
-        <div class="content-table">
+        <div class="content">
             <div class="head">
-                <input type="text" name="" id="search" placeholder="Recherche....">
+                <h3>Tableau de bord</h3>
+                <div class="date">
+                    <h4>{{ aujourd_hui }}</h4>
+                </div>
                 <div class="icon">
-                    <i class="fa fa-bars id="menu-btn""></i>
+                    <i class="fa fa-bars" id="menu-btn"></i>
                 </div>
             </div>
-            <div class="titre">
-                <h3>Liste des catégorie</h3>
-                <a href="/insertCategorie" class="btn"><i class="fa fa-plus-circle"></i></a>
-            </div>
             <div class="container">
+                <div class="card">
+                    <div class="card-result">
+                        <div class="icon">
+                            <div class="fa fa-apple-alt"></div>
+                        </div>
+                        <div class="contenu">
+                            <p>Total des produits</p>
+                            <h4>{{ countProduit }}</h4>
+                        </div>
+                    </div>
+                    <div class="card-result-2">
+                        <div class="icon">
+                            <div class="fa fa-folder"></div>
+                        </div>
+                        <div class="contenu">
+                            <p>Total des Categories</p>
+                            <h4>{{ countCategorie }}</h4>
+                        </div>
+                    </div>
+                </div>
                 <div class="table">
                     <table>
                         <thead>
-                            <th>Id Catégorie</th>
-                            <th>Nom Catégorie</th>
-                            <th>Action</th>
-                            
+                            <th>Id Produit</th>
+                            <th>Nom Produit</th>
+                            <th>Prix</th>
+                            <th>Categorie</th>
                         </thead>
                         <tbody>
-                            {{ list_categorie }}
+                            {{ produit }}
                         </tbody>
                     </table>
                 </div>
@@ -61,17 +80,4 @@
 </body>
 <script src="/assets/js/script.js"></script>
 <script src="/assets/js/button.js"></script>
-<script>
-document.querySelectorAll('.editBtn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const touristeData = {
-        id: btn.dataset.id,
-        nom: btn.dataset.nom
-        };
-
-        localStorage.setItem('editTouriste', JSON.stringify(touristeData));
-        window.location.href = "/updateCategorie";
-    });
-});
-</script>
 </html>

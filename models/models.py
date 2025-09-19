@@ -53,7 +53,7 @@ class Model():
     @classmethod
     def count(cls):
         table = cls.__name__.lower()
-        query = f"SELECT COUNT(*) FROM {table}"
+        query = f"SELECT COUNT(*) as p FROM {table}"
         base = Database()
         base.cursor.execute(query)
         return base.cursor.fetchone()

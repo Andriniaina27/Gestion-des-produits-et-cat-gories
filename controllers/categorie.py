@@ -1,8 +1,8 @@
-from models.produit import Produit
-from models.categorie import Categorie
+from models.produit import Produits
+from models.categorie import Categories
 import urllib.parse
 
-class ProduitController(object):
+class CategorieController(object):
     @staticmethod
     async def __load(send, filename, dico=None):
         with open(filename, "r", encoding="utf-8") as f:
@@ -24,14 +24,6 @@ class ProduitController(object):
             'body' : html.encode()
         })
 
-
-
-    @staticmethod
-    async def index(scope, receive, send):
-        last = Produit.lastId() + 1
-        dics = {"numero" : last}
-        await __class__.__load(send, "views/dashboard.html", dics)
-    
 
     @staticmethod
     async def error404(scope, receive, send):
@@ -59,15 +51,12 @@ class ProduitController(object):
         dico = urllib.parse.parse_qs(body.decode())
 
         nom    = dico.get("nom", b"")
-        prenom = dico.get("prenom", b"")
-        age    = dico.get("age", b"")
-        groupe = dico.get("groupe", b"")
-        Produit.insert(nom, prenom, age, groupe)
+        Categories.insert(nom)
 
         await send({
             "type": "http.response.start",
             "status": 302,
-            "headers": [(b"Location", b"/listTouriste")]
+            "headers": [(b"Location", b"/listCategorie")]
         })
         await send({
             "type": "http.response.body",
@@ -76,62 +65,51 @@ class ProduitController(object):
         
     
     @staticmethod
-    async def touristeInsert(scope, receive, send):
-        groupe = Categorie.getAll()
-        options = ""
-
-        for g in groupe:
-            options += f'<option value="{g["id_groupe"]}">{g["nomG"]}</option>'
-        context = {"options_groupe": options}
-        await __class__.__load(send, "views/create.html", context)
+    async def categorieInsert(scope, receive, send):
+        last_id = Categories.lastId() + 1
+        context = {"last_id": last_id}
+        await __class__.__load(send, "views/categorie/insert.html", context)
     
     @staticmethod
-    async def listTouriste(scope, receive, send):
-        touriste = Produit.getAllJoin(
-            joins=[("groupe", "touriste.groupe_id = groupe.id_groupe")],
-            colonne=[("touriste.nom", "touriste.prenom", "touriste.age", "groupe.nomG as nomGrp", "touriste.id_touriste")]
-        )
+    async def listCategorie(scope, receive, send):
+        categorie = Categories.getAll()
 
-        list_Touriste = ""
-        for t in touriste:
-            list_Touriste += f"""
+        list_categorie = ""
+        for c in categorie:
+            list_categorie += f"""
                 <tr>
-                    <td>{t['nom']}</td>
-                    <td>{t['prenom']}</td>
-                    <td>{t['age']} ans</td>
-                    <td>{t['nomG']}</td>
+                    <td>{c['id_categories']}</td>
+                    <td>{c['nom']}</td>
                     <td width = 200 class="action">
-                        <form action="/opdelete" method="post">
-                            <input type="hidden" name="id" id="" value="{t['id_touriste']}">
+                        <form action="/opudeleteCategorie" method="post">
+                            <input type="hidden" name="id" id="" value="{c['id_categories']}">
                             <button type="submit">Supprimer</button>
                         </form>
                         <button class="editBtn"
-                                data-id="{t['id_touriste']}"
-                                data-nom="{t['nom']}"
-                                data-prenom="{t['prenom']}"
-                                data-age="{t['age']}">
+                                data-id="{c['id_categories']}"
+                                data-nom="{c['nom']}">
                             Modifier
                         </button>
                     </td>
                 </tr>
             """
-        context = {"table_touristes" : list_Touriste}
-        await __class__.__load(send, "views/table.html", context)
+        context = {"list_categorie" : list_categorie}
+        await __class__.__load(send, "views/categorie/read.html", context)
     
     @staticmethod
-    async def deleteTouriste(scope, receive, send):
+    async def deleteCategorie(scope, receive, send):
         try:
             event = await receive()
             body = event.get("body", b'')
             dico = urllib.parse.parse_qs(body.decode())
 
             id    = dico.get("id", b"")
-            Produit.delete(id)
+            Categories.delete(id)
 
             await send({
                 "type": "http.response.start",
                 "status": 302,
-                "headers": [(b"Location", b"/listTouriste")]
+                "headers": [(b"Location", b"/listCategorie")]
             })
             await send({
                 "type": "http.response.body",
@@ -150,55 +128,29 @@ class ProduitController(object):
                 "body": f"Erreur lors de la suppression : {e}".encode()
             })
     
-    async def updateTouriste(scope, receive, send):
+    async def updateCategorie(scope, receive, send):
         
-        groupe = Categorie.getAll()
-        options = ""
-
-        for g in groupe:
-            options += f'<option value="{g["id_groupe"]}">{g["nomG"]}</option>'
-        
-        # ajout = ""
-        # ajout = f"""
-        #     <div class="input">
-        #         <label for="Nom">Nom</label>
-        #         <input type="text" name="nom" id="" value="{liste["nom"]}">
-        #     </div>
-        #     <div class="input">
-        #         <label for="Nom">Prenom</label>
-        #         <input type="text" name="prenom" id="" value="">
-        #     </div>
-        #     <div class="input">
-        #         <label for="Nom">Age</label>
-        #         <input type="number" name="age" id="" value="">
-        #     </div>
-        # """
-        context = {
-            "options_groupe": options
-        }
-        await __class__.__load(send, "views/update.html", context)
+        await __class__.__load(send, "views/categorie/update.html")
 
 
     @staticmethod
-    async def opUpdate(scope, receive, send):
+    async def opUpdateCategorie(scope, receive, send):
         event = await receive()
         body = event.get("body", b'')
         dico = urllib.parse.parse_qs(body.decode())
         
-        colonne = ["nom", "prenom", "age", "groupe_id"]
+        colonne = ["nom"]
         id    = int(dico.get("id", ["0"])[0])
         nom    = dico.get("nom", [""])[0]
-        prenom = dico.get("prenom", [""])[0]
-        age    = dico.get("age", [""])[0]
-        groupe = dico.get("groupe", [""])[0]
 
-        values = (nom, prenom, age, groupe)
-        Produit.update(id, colonne , *values)
+        values = (nom)
+        # print(id, colonne,nom)
+        Categories.update(id, colonne , values)
 
         await send({
             "type": "http.response.start",
             "status": 302,
-            "headers": [(b"Location", b"/listTouriste")]
+            "headers": [(b"Location", b"/listCategorie")]
         })
         await send({
             "type": "http.response.body",

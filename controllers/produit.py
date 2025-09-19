@@ -1,6 +1,8 @@
-from models.produit import Produit
-from models.categorie import Categorie
+from models.produit import Produits
+from models.categorie import Categories
 import urllib.parse
+from datetime import datetime
+import locale
 
 class ProduitController(object):
     @staticmethod
@@ -28,9 +30,35 @@ class ProduitController(object):
 
     @staticmethod
     async def index(scope, receive, send):
-        last = Produit.lastId() + 1
-        dics = {"numero" : last}
-        await __class__.__load(send, "views/dashboard.html", dics)
+        # last = Produit.lastId() + 1
+        # dics = {"numero" : last}
+        locale.setlocale(locale.LC_TIME, 'french')
+        date_sys = datetime.today()
+        aujourd_hui = date_sys.strftime('%A %d %B %Y')
+        produit = Produits.getAllJoin(
+            joins=[("categories", "produits.categorie_id = categories.id_categories")],
+            colonne=[("produit.nom", "produit.prix", "produits.nom as nomC", "produits.id_produits")]
+        )
+
+        countProduit = Produits.count()[0]
+        countCategorie = Categories.count()[0]
+        list_produit = ""
+        for p in produit:
+            list_produit += f"""
+                <tr>
+                    <td>{p['id_produits']}</td>
+                    <td>{p['nomP']}</td>
+                    <td>{p['prix']} Ariary</td>
+                    <td>{p['nom']} </td>
+                </tr>
+            """
+        context = {
+            "aujourd_hui" : aujourd_hui,
+            "countProduit" : countProduit,
+            "countCategorie" : countCategorie,
+            "produit" : list_produit
+        }
+        await __class__.__load(send, "views/dashboard.html", context)
     
 
     @staticmethod
@@ -58,16 +86,15 @@ class ProduitController(object):
         body = event.get("body", b'')
         dico = urllib.parse.parse_qs(body.decode())
 
-        nom    = dico.get("nom", b"")
-        prenom = dico.get("prenom", b"")
-        age    = dico.get("age", b"")
-        groupe = dico.get("groupe", b"")
-        Produit.insert(nom, prenom, age, groupe)
+        nom    = dico.get("nom", [""])[0]
+        prix    = dico.get("prix", [""])[0]
+        categorie = dico.get("categorie", [""])[0]
+        Produits.insert(nom, prix, categorie)
 
         await send({
             "type": "http.response.start",
             "status": 302,
-            "headers": [(b"Location", b"/listTouriste")]
+            "headers": [(b"Location", b"/listProduit")]
         })
         await send({
             "type": "http.response.body",
@@ -76,62 +103,65 @@ class ProduitController(object):
         
     
     @staticmethod
-    async def touristeInsert(scope, receive, send):
-        groupe = Categorie.getAll()
+    async def produitInsert(scope, receive, send):
+        last_id = Produits.lastId() + 1
+        categorie = Categories.getAll()
         options = ""
 
-        for g in groupe:
-            options += f'<option value="{g["id_groupe"]}">{g["nomG"]}</option>'
-        context = {"options_groupe": options}
-        await __class__.__load(send, "views/create.html", context)
+        for c in categorie:
+            options += f'<option value="{c["id_categories"]}">{c["nom"]}</option>'
+        context = {
+            "last_id" : last_id,
+            "options_categorie": options,
+            }
+        await __class__.__load(send, "views/produit/insert.html", context)
     
     @staticmethod
-    async def listTouriste(scope, receive, send):
-        touriste = Produit.getAllJoin(
-            joins=[("groupe", "touriste.groupe_id = groupe.id_groupe")],
-            colonne=[("touriste.nom", "touriste.prenom", "touriste.age", "groupe.nomG as nomGrp", "touriste.id_touriste")]
+    async def listProduit(scope, receive, send):
+        produit = Produits.getAllJoin(
+            joins=[("categories", "produits.categorie_id = categories.id_categories")],
+            colonne=[("produit.nom", "produit.prix", "produits.nom as nomC", "produits.id_produits")]
         )
 
-        list_Touriste = ""
-        for t in touriste:
-            list_Touriste += f"""
+        list_produit = ""
+        for p in produit:
+            list_produit += f"""
                 <tr>
-                    <td>{t['nom']}</td>
-                    <td>{t['prenom']}</td>
-                    <td>{t['age']} ans</td>
-                    <td>{t['nomG']}</td>
+                    <td>{p['id_produits']}</td>
+                    <td>{p['nomP']}</td>
+                    <td>{p['prix']} Ariary</td>
+                    <td>{p['nom']} </td>
                     <td width = 200 class="action">
-                        <form action="/opdelete" method="post">
-                            <input type="hidden" name="id" id="" value="{t['id_touriste']}">
+                        <form action="/opdeleteProduit" method="post">
+                            <input type="hidden" name="id" id="" value="{p['id_produits']}">
                             <button type="submit">Supprimer</button>
                         </form>
                         <button class="editBtn"
-                                data-id="{t['id_touriste']}"
-                                data-nom="{t['nom']}"
-                                data-prenom="{t['prenom']}"
-                                data-age="{t['age']}">
+                                data-id="{p['id_produits']}"
+                                data-nom="{p['nomP']}"
+                                data-prix="{p['prix']}">
                             Modifier
                         </button>
                     </td>
                 </tr>
             """
-        context = {"table_touristes" : list_Touriste}
-        await __class__.__load(send, "views/table.html", context)
+        context = {"list_produit" : list_produit}
+        await __class__.__load(send, "views/produit/read.html", context)
     
     @staticmethod
-    async def deleteTouriste(scope, receive, send):
+    async def deleteProduit(scope, receive, send):
         try:
             event = await receive()
             body = event.get("body", b'')
             dico = urllib.parse.parse_qs(body.decode())
 
             id    = dico.get("id", b"")
-            Produit.delete(id)
+            Produits.delete(id)
 
             await send({
                 "type": "http.response.start",
                 "status": 302,
-                "headers": [(b"Location", b"/listTouriste")]
+                "headers": [(b"Location", b"/listProduit")]
             })
             await send({
                 "type": "http.response.body",
@@ -150,33 +180,18 @@ class ProduitController(object):
                 "body": f"Erreur lors de la suppression : {e}".encode()
             })
     
-    async def updateTouriste(scope, receive, send):
+    async def updateProduit(scope, receive, send):
         
-        groupe = Categorie.getAll()
+        categorie = Categories.getAll()
         options = ""
 
-        for g in groupe:
-            options += f'<option value="{g["id_groupe"]}">{g["nomG"]}</option>'
-        
-        # ajout = ""
-        # ajout = f"""
-        #     <div class="input">
-        #         <label for="Nom">Nom</label>
-        #         <input type="text" name="nom" id="" value="{liste["nom"]}">
-        #     </div>
-        #     <div class="input">
-        #         <label for="Nom">Prenom</label>
-        #         <input type="text" name="prenom" id="" value="">
-        #     </div>
-        #     <div class="input">
-        #         <label for="Nom">Age</label>
-        #         <input type="number" name="age" id="" value="">
-        #     </div>
-        # """
+        for c in categorie:
+            options += f'<option value="{c["id_categories"]}">{c["nom"]}</option>'
         context = {
-            "options_groupe": options
-        }
-        await __class__.__load(send, "views/update.html", context)
+            "options_categorie": options,
+            }
+        
+        await __class__.__load(send, "views/produit/update.html", context)
 
 
     @staticmethod
@@ -185,20 +200,19 @@ class ProduitController(object):
         body = event.get("body", b'')
         dico = urllib.parse.parse_qs(body.decode())
         
-        colonne = ["nom", "prenom", "age", "groupe_id"]
-        id    = int(dico.get("id", ["0"])[0])
-        nom    = dico.get("nom", [""])[0]
-        prenom = dico.get("prenom", [""])[0]
-        age    = dico.get("age", [""])[0]
-        groupe = dico.get("groupe", [""])[0]
+        colonne = ["nomP", "prix", "categorie_id"]
+        id        = int(dico.get("id", ["0"])[0])
+        nom       = dico.get("nom", [""])[0]
+        prix      = dico.get("prix", [""])[0]
+        categorie = dico.get("categorie", [""])[0]
 
-        values = (nom, prenom, age, groupe)
-        Produit.update(id, colonne , *values)
+        values = (nom, prix, categorie)
+        Produits.update(id, colonne , *values)
 
         await send({
             "type": "http.response.start",
             "status": 302,
-            "headers": [(b"Location", b"/listTouriste")]
+            "headers": [(b"Location", b"/listProduit")]
         })
         await send({
             "type": "http.response.body",

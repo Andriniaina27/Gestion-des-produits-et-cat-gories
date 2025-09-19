@@ -1,6 +1,6 @@
 from .models import Model
 
-class Produit(Model):
+class Produits(Model):
     def __init__(self, id, nom, prix, categorie_id):
         self.id           = id
         self.nom          = nom

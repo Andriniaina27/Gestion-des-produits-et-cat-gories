@@ -135,7 +135,7 @@ body {
 }
 .wrapper .content .container .card {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   padding-bottom: 1rem;
 }
@@ -157,7 +157,6 @@ body {
   padding: 2rem 1rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   background: linear-gradient(180deg, rgb(0, 102, 255), rgb(0, 67, 167));
   border-radius: 10px;
 }
@@ -165,6 +164,7 @@ body {
   padding: 0.5rem 0.5rem;
   border: 1px solid white;
   border-radius: 5px;
+  margin-right: 1rem;
 }
 .wrapper .content .container .card .card-result .icon div {
   font-size: 1rem;
@@ -179,7 +179,6 @@ body {
 .wrapper .content .container .card .card-result-1 {
   padding: 2rem 1rem;
   display: flex;
-  align-items: center;
   justify-content: space-between;
   background: linear-gradient(180deg, rgb(255, 145, 0), rgb(175, 99, 0));
   border-radius: 10px;
@@ -188,6 +187,7 @@ body {
   padding: 0.5rem 0.5rem;
   border: 1px solid white;
   border-radius: 5px;
+  margin-right: 1rem;
 }
 .wrapper .content .container .card .card-result-1 .icon div {
   font-size: 1rem;
@@ -203,7 +203,6 @@ body {
   padding: 2rem 1rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   background: linear-gradient(180deg, rgb(0, 204, 119), rgb(1, 172, 100));
   border-radius: 10px;
 }
@@ -211,6 +210,7 @@ body {
   padding: 0.5rem 0.5rem;
   border: 1px solid white;
   border-radius: 5px;
+  margin-right: 1rem;
 }
 .wrapper .content .container .card .card-result-2 .icon div {
   font-size: 1rem;
@@ -261,6 +261,7 @@ body {
   background: white;
   border-radius: 20px;
   box-shadow: 10px 4px 20px rgba(0, 0, 0, 0.329);
+  table-layout: fixed;
 }
 .wrapper .content .container .table table {
   width: 100%;
@@ -268,6 +269,10 @@ body {
 .wrapper .content .container .table table thead th {
   text-align: left;
   color: rgb(150, 150, 150);
+}
+.wrapper .content .container .table table tbody tr td {
+  padding: 0.6rem 0;
+  border-top: 1px rgb(150, 150, 150) solid;
 }
 
 .content-table {

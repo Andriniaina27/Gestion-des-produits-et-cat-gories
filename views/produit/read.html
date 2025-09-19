@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/sass/style.css">
+    <link rel="stylesheet" href="/assets/fontawesome-free-5.15.4-web/css/all.min.css">
+    <title>Liste des Catégorie</title>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="sidebar" id="sidebar">
+            <nav>
+                <div class="heading">
+                    <h3>Admin</h3>
+                </div>
+                <div class="navlink">
+                    <a href="/" class="nav-item">
+                        <i class="fa fa-home"></i>
+                        Accueil
+                    </a>
+                    <a href="/listProduit" class="nav-item">
+                        <i class="fa fa-box"></i>
+                        Produit
+                    </a>
+                    <a href="/listCategorie" class="nav-item">
+                        <i class="fa fa-folder"></i>
+                        Categorie
+                    </a>
+                </div>
+            </nav>
+        </div>
+        <div class="content-table">
+            <div class="head">
+                <input type="text" name="" id="search" placeholder="Recherche....">
+                <div class="icon">
+                    <i class="fa fa-bars id="menu-btn""></i>
+                </div>
+            </div>
+            <div class="titre">
+                <h3>Liste des catégorie</h3>
+                <a href="/insertProduit" class="btn"><i class="fa fa-plus-circle"></i></a>
+            </div>
+            <div class="container">
+                <div class="table">
+                    <table>
+                        <thead>
+                            <th>Id Produit</th>
+                            <th>Nom Produit</th>
+                            <th>Prix</th>
+                            <th>Categorie</th>
+                            <th>Action</th>
+                            
+                        </thead>
+                        <tbody>
+                            {{ list_produit }}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="/assets/js/script.js"></script>
+<script src="/assets/js/button.js"></script>
+<script>
+document.querySelectorAll('.editBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const touristeData = {
+        id: btn.dataset.id,
+        nom: btn.dataset.nom,
+        prix: btn.dataset.prix,
+        };
+
+        localStorage.setItem('editTouriste', JSON.stringify(touristeData));
+        window.location.href = "/updateProduit";
+    });
+});
+</script>
+</html>
